@@ -1,0 +1,68 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: riasc-system
+  name: {{ include "riasc.fullname" . }}-time-sync
+  labels:
+    {{- include "riasc.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      name: ntp
+  template:
+    metadata:
+      labels:
+        name: ntp
+    spec:
+      strategy: Recreate
+      securityContext:
+        privileged: true
+      containers:
+      - name: ntpd
+        image: erigrid/time-sync
+        command:
+        - chrony
+        args: [
+          '-d',
+          '-f', '/etc/chrony.conf'
+        ]
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /dev/pps0
+          name: dev-pps
+        - mountPath: /etc/chrony.conf
+          name: config
+          subPath: chrony.conf
+          readOnly: true
+
+      - name: gpsd
+        image: erigrid/time-sync
+        command:
+        - gpsd
+        args:
+        - N
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /dev/serial0
+          name: dev-serial
+
+      volumes:
+      - name: dev-serial
+        hostPath:
+          path: /dev/serial0
+      - name: dev-pps
+        hostPath:
+          path: /dev/pps0
+      - name: config
+        configMap:
