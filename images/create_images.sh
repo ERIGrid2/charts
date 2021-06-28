@@ -9,7 +9,7 @@ PLATFORMS=linux/arm/v7,linux/arm64,linux/amd64
 if (( $# >= 1)); then
 	IMAGES=$@
 else
-	IMAGES="multus-cni time-sync"
+	IMAGES="multus-cni time-sync flent"
 fi
 
 function docker_init_buildkit() {
@@ -35,8 +35,6 @@ function docker_build() {
 }
 
 docker_init_buildkit
-
-
 
 for IMAGE in ${IMAGES}; do
 	docker_build ${IMAGE}
