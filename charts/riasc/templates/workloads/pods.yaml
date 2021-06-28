@@ -1,0 +1,23 @@
+{{ range .Values.workloads }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .name }}
+spec:
+  containers:
+    - name: container
+      image: {{ .image }}
+{{- if .command -}}
+      command: {{ .command | toYaml }}
+{{- end }}
+{{- if .env }}
+      env:
+{{- range $key, $value := .env -}}
+      - name: {{ $key }}
+        value: {{ $value }}
+{{- end }}
+{{- end }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ .node }}
+{{- end }}
