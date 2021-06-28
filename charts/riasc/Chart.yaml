@@ -36,3 +36,10 @@ version: 0.1.0
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 appVersion: 1.16.0
+
+dependencies:
+- name: minio
+  version: 8.0.9
+  repository: https://helm.min.io/
+  condition: "s3.enabled"
+  alias: s3
