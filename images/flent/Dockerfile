@@ -2,6 +2,7 @@ FROM debian:buster AS builder
 
 RUN apt-get update && \
 	apt-get -y install \
+		build-essential \
 		git \
 		autotools-dev \
 		automake \
@@ -20,11 +21,12 @@ RUN apt-get update && \
 		iputils-ping \
 		fping \
 		iperf \
-		python3-pip
+		python3-pip \
+		git
 
 COPY --from=builder /usr/local/ /usr/local/
 
-ENV PATH=/usr/local/bin
+ENV PATH=/usr/local/bin:${PATH}
 
 RUN pip3 install \
 	flent \
