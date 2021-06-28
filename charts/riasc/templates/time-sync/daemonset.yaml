@@ -1,3 +1,4 @@
+{{- if .Values.time_sync.enabled }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -15,18 +16,17 @@ spec:
       labels:
         name: ntp
     spec:
-      strategy: Recreate
-      securityContext:
-        privileged: true
       containers:
       - name: ntpd
         image: erigrid/time-sync
         command:
-        - chrony
+        - chronyd
         args: [
           '-d',
           '-f', '/etc/chrony.conf'
         ]
+        securityContext:
+          privileged: true
         resources:
           limits:
             memory: 200Mi
@@ -46,7 +46,10 @@ spec:
         command:
         - gpsd
         args:
-        - N
+        - "-N"
+        - /dev/serial0
+        securityContext:
+          privileged: true
         resources:
           limits:
             memory: 200Mi
@@ -66,3 +69,5 @@ spec:
           path: /dev/pps0
       - name: config
         configMap:
+          name: {{ include "riasc.fullname" . }}-time-sync
+{{- end }}

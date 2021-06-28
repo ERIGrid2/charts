@@ -1,7 +1,10 @@
+{{- if .Values.time_sync.enabled }}
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "riasc.fullname" . }}-time-sync
+  namespace: riasc-system
   labels:
     {{- include "riasc.labels" . | nindent 4 }}
 data:
@@ -73,9 +76,9 @@ data:
     pool   europe.pool.ntp.org    iburst  minpoll 4  maxpoll 4
     #pool  de.pool.ntp.org        iburst  minpoll 4  maxpoll 4
 
-    # RWTH Aachen
-    server  ntp1.rwth-aachen.de   iburst  minpoll 4  maxpoll 4
-    server  ntp2.rwth-aachen.de   iburst  minpoll 4  maxpoll 4
+{{- range .Values.time_sync.ntp.servers }}
+    server  {{ . }}  iburst  minpoll 4  maxpoll 4
+{{- end }}
 
     # Some Stratum1 Servers
     # https://www.meinbergglobal.com/english/glossary/public-time-server.htm
@@ -113,3 +116,4 @@ data:
     # in the temperature and improve the stability and accuracy of the clock.
     # (/sys/class/thermal/thermal_zone0/temp = Raspberry Pi CPU temp)
     tempcomp /sys/class/thermal/thermal_zone0/temp  8  /etc/chrony/stratum1/chrony.tempcomp
+{{- end }}
