@@ -1,10 +1,11 @@
-FROM alpine:3.13
+FROM debian:buster
 
-RUN apk add \
+RUN apt-get update && \
+    apt-get -y install \
         chrony \
         gpsd \
         gpsd-clients \
-        py3-pip
+        python3-pip
 
 RUN pip3 install \
     kubernetes
