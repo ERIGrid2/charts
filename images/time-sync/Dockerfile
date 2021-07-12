@@ -10,4 +10,4 @@ RUN apt-get update && \
 RUN pip3 install \
     kubernetes
 
-COPY update_status.py /
+COPY chrony-monitor.py /
