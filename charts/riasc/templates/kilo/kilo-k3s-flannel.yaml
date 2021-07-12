@@ -1,3 +1,6 @@
+{{- if .Values.network.kilo.enabled -}}\
+# From https://raw.githubusercontent.com/squat/kilo/main/manifests/kilo-k3s-flannel.yaml
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -30,7 +33,7 @@ rules:
   resources:
   - customresourcedefinitions
   verbs:
-  - create
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -52,14 +55,17 @@ metadata:
   namespace: kube-system
   labels:
     app.kubernetes.io/name: kilo
+    app.kubernetes.io/part-of: kilo
 spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: kilo
+      app.kubernetes.io/part-of: kilo
   template:
     metadata:
       labels:
         app.kubernetes.io/name: kilo
+        app.kubernetes.io/part-of: kilo
     spec:
       serviceAccountName: kilo
       hostNetwork: true
@@ -67,16 +73,20 @@ spec:
       - name: kilo
         image: squat/kilo
         args:
-        - --master=localhost:6443
+        - --kubeconfig=/etc/kubernetes/kubeconfig
         - --hostname=$(NODE_NAME)
         - --cni=false
         - --compatibility=flannel
         - --local=false
+        - --mesh-granularity=full
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        ports:
+        - containerPort: 1107
+          name: metrics
         securityContext:
           privileged: true
         volumeMounts:
@@ -100,6 +110,12 @@ spec:
       - name: kilo-dir
         hostPath:
           path: /var/lib/kilo
+      - name: kubeconfig
+        hostPath: 
+          # Since kilo runs as a daemonset, it is recommended that you copy the
+          # k3s.yaml kubeconfig file from the master node to all worker nodes
+          # with the same path structure.
+          path: /etc/rancher/k3s/k3s.yaml
       - name: lib-modules
         hostPath:
           path: /lib/modules
@@ -107,3 +123,4 @@ spec:
         hostPath:
           path: /run/xtables.lock
           type: FileOrCreate
+{{- end }}
