@@ -30,5 +30,4 @@ ENV PATH=/usr/local/bin:${PATH}
 
 RUN pip3 install \
 	flent \
-	matplotlib \
 	git+https://github.com/ERIGrid2/k8s-flent.git
