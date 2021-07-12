@@ -17,22 +17,20 @@ spec:
         name: ntp
     spec:
       containers:
-      - name: ntpd
+      - name: chrony
         image: erigrid/time-sync
         command:
         - chronyd
         args: [
-          '-d',
+          '-n',
+          '-dd',
           '-f', '/etc/chrony.conf'
         ]
+        hostNetwork: true
         securityContext:
-          privileged: true
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
+          capabilities:
+            add:
+            - SYS_TIME
         volumeMounts:
         - mountPath: /dev/pps0
           name: dev-pps
@@ -40,34 +38,59 @@ spec:
           name: config
           subPath: chrony.conf
           readOnly: true
+        - mountPath: /run/
+          name: run
+        - mountPath: /var/lib/chrony
+          name: var
+
+      - name: chrony-monitor
+        image: erigrid/time-sync
+        command:
+        - python3
+        args:
+        - /chrony-monitor.py
+        volumeMounts:
+        - mountPath: /dev/pps0
+          name: dev-pps
+        - mountPath: /etc/chrony.conf
+          name: config
+          subPath: chrony.conf
+          readOnly: true
+        - mountPath: /run/
+          name: run
+        - mountPath: /var/lib/chrony
+          name: var
 
       - name: gpsd
         image: erigrid/time-sync
+        tty: true
         command:
-        - gpsd
+        - /bin/sh
         args:
-        - "-N"
-        - /dev/serial0
-        securityContext:
-          privileged: true
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
+        - -c
+        - while [ ! -S /run/chrony.ttyAMA0.sock ]; do sleep 1; done; sleep 1; gpsd -n -N -D4 /dev/ttyAMA0
         volumeMounts:
-        - mountPath: /dev/serial0
+        - mountPath: /dev/ttyAMA0
           name: dev-serial
+        - mountPath: /dev/pps0
+          name: dev-pps
+        - mountPath: /run/
+          name: run
 
       volumes:
       - name: dev-serial
         hostPath:
-          path: /dev/serial0
+          path: /dev/ttyAMA0
       - name: dev-pps
         hostPath:
           path: /dev/pps0
       - name: config
         configMap:
           name: {{ include "riasc.fullname" . }}-time-sync
+      - name: run
+        emptyDir:
+      - name: var
+        hostPath:
+          path: /var/lib/chrony
+          type: DirectoryOrCreate
 {{- end }}
