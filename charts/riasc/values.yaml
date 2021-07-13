@@ -29,9 +29,6 @@ network:
   flent:
     enabled: false
 
-  tinc:
-    enabled: false
-
 # User workloads which should deployed in the RIasC cluster
 # workloads:
 # - name: Test workloads
