@@ -1,8 +1,9 @@
+{{- if .Values.network.multus.enabled }}
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: kube-multus
+  name: kube-multus-ds
   namespace: kube-system
   labels:
     tier: node
@@ -28,7 +29,7 @@ spec:
       serviceAccountName: multus
       containers:
       - name: kube-multus
-        image: stv0g/multus-cni
+        image: erigrid/multus
         command: ["/entrypoint.sh"]
         args:
         - "--multus-conf-file=auto"
@@ -63,3 +64,4 @@ spec:
             items:
             - key: cni-conf.json
               path: 70-multus.conf
+{{- end }}
