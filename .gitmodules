@@ -1,3 +1,0 @@
-[submodule "images/multus/multus-cni"]
-	path = images/multus/multus-cni
-	url = https://github.com/k8snetworkplumbingwg/multus-cni.git

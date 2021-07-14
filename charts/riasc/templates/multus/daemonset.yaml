@@ -29,7 +29,7 @@ spec:
       serviceAccountName: multus
       containers:
       - name: kube-multus
-        image: erigrid/multus
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni:v3.7.2
         command: ["/entrypoint.sh"]
         args:
         - "--multus-conf-file=auto"
