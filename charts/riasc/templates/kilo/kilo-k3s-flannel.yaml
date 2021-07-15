@@ -102,7 +102,7 @@ spec:
           readOnly: false
       initContainers:
       - name: generate-kubeconfig
-        image: busybox
+        image: squat/kilo
         command:
         - /bin/sh
         args:
