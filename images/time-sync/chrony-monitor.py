@@ -15,7 +15,7 @@ def get_status():
         'sources': sources
     }
 
-    ret = subprocess.run(['chronyc', '-n', '-c', 'tracking'], capture_output=True, check=True)
+    ret = subprocess.run(['chronyc', '-ncm', 'tracking', 'sources'], capture_output=True, check=True)
 
     lines = ret.stdout.decode('ascii').split('\n')
     cols = lines[0].split(',')
@@ -35,9 +35,7 @@ def get_status():
     fields['last_update_interval'] = float(cols[12])
     fields['leap_status'] = cols[13].lower()
 
-    ret = subprocess.run(['chronyc', '-n', '-c', 'sources'], capture_output=True, check=True)
-    lines = ret.stdout.decode('ascii').split('\n')
-    for line in lines:
+    for line in lines[1:]:
         cols = line.split(',')
         if len(cols) < 8:
             continue
@@ -151,8 +149,8 @@ def main():
             # status = {'sources': {'134.130.4.17': {'mode': 'server', 'state': 'combined', 'stratum': '1', 'poll': '10', 'reach': '377', 'last_rx': '461', 'last_sample': '-0.000032053'}, '134.130.5.17': {'mode': 'server', 'state': 'synced', 'stratum': '1', 'poll': '10', 'reach': '377', 'last_rx': '392', 'last_sample': '-0.000043199'}}, 'ref_id': 86820511, 'ref_name': '134.130.5.17', 'stratum': 2, 'ref_time': datetime.datetime(2021, 6, 28, 13, 43, 10, 329265), 'current_correction': 1.7534e-05, 'last_offset': 2.552e-06, 'rms_offset': 1.9959e-05, 'freq_ppm': -87.802, 'resid_freq_ppm': 0.0, 'skew_ppm': 0.006, 'root_delay': 0.000375683, 'root_dispersion': 0.00056641, 'last_update_interval': 1024.8, 'leap_status': 'normal'}
 
             logging.info('Got status: %s', status)
-        except:
-            logging.warning('Failed to query Chrony status')
+        except Exception as e:
+            logging.warning('Failed to query Chrony status: %s', e)
 
             status = None
 
