@@ -17,24 +17,23 @@ spec:
         name: ntp
     spec:
       serviceAccount: time-sync
-      hostNetwork: true
+      hostNetwork: true # for IEEE1588/PTP
       containers:
       - name: chrony
         image: erigrid/time-sync
         command:
-        - chronyd
-        args: [
-          '-n',
-          '-dd',
-          '-f', '/etc/chrony.conf'
-        ]
+        - /bin/sh
+        args:
+        - -c
+        - rm -f /run/chronyd.pid; chronyd -dd -f /etc/chrony.conf
         securityContext:
-          capabilities:
-            add:
-            - SYS_TIME
+          privileged: true
+          # capabilities:
+          #   add:
+          #   - SYS_TIME
         volumeMounts:
-        - mountPath: /dev/pps0
-          name: dev-pps
+        - mountPath: /dev
+          name: dev
         - mountPath: /etc/chrony.conf
           name: config
           subPath: chrony.conf
@@ -46,17 +45,7 @@ spec:
 
       - name: chrony-monitor
         image: erigrid/time-sync
-        command:
-        - python3
-        args:
-        - /chrony-monitor.py
         volumeMounts:
-        - mountPath: /dev/pps0
-          name: dev-pps
-        - mountPath: /etc/chrony.conf
-          name: config
-          subPath: chrony.conf
-          readOnly: true
         - mountPath: /run/
           name: run
         - mountPath: /var/lib/chrony
@@ -64,17 +53,19 @@ spec:
 
       - name: gpsd
         image: erigrid/time-sync
-        tty: true
         command:
         - /bin/sh
         args:
         - -c
         - while [ ! -S /run/chrony.ttyAMA0.sock ]; do sleep 1; done; sleep 1; gpsd -n -N -D4 /dev/ttyAMA0
+        securityContext:
+          privileged: true
+          # capabilities:
+          #   add:
+          #   - SYS_NICE
         volumeMounts:
-        - mountPath: /dev/ttyAMA0
-          name: dev-serial
-        - mountPath: /dev/pps0
-          name: dev-pps
+        - mountPath: /dev
+          name: dev
         - mountPath: /run/
           name: run
 
@@ -94,12 +85,9 @@ spec:
       #     name: run
 
       volumes:
-      - name: dev-serial
+      - name: dev
         hostPath:
-          path: /dev/ttyAMA0
-      - name: dev-pps
-        hostPath:
-          path: /dev/pps0
+          path: /dev
       - name: config
         configMap:
           name: {{ include "riasc.fullname" . }}-time-sync
