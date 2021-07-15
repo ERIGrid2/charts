@@ -78,6 +78,21 @@ spec:
         - mountPath: /run/
           name: run
 
+      # - name: ptp4l
+      #   image: erigrid/time-sync
+      #   command:
+      #   - ptp4l
+      #   args: [
+      #     '-m', '-i', 'eno1'
+      #   ]
+      #   securityContext:
+      #     privileged: true
+      #   volumeMounts:
+      #   - mountPath: /dev
+      #     name: dev
+      #   - mountPath: /run/
+      #     name: run
+
       volumes:
       - name: dev-serial
         hostPath:

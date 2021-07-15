@@ -5,7 +5,9 @@ RUN apt-get update && \
         chrony \
         gpsd \
         gpsd-clients \
-        python3-pip
+        python3-pip \
+        linuxptp \
+        ethtool
 
 RUN pip3 install \
     kubernetes
