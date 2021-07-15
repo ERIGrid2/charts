@@ -11,3 +11,5 @@ RUN pip3 install \
     kubernetes
 
 COPY chrony-monitor.py /
+
+CMD ["python3", "/chrony-monitor.py"]

@@ -16,6 +16,8 @@ spec:
       labels:
         name: ntp
     spec:
+      serviceAccount: time-sync
+      hostNetwork: true
       containers:
       - name: chrony
         image: erigrid/time-sync
@@ -26,7 +28,6 @@ spec:
           '-dd',
           '-f', '/etc/chrony.conf'
         ]
-        hostNetwork: true
         securityContext:
           capabilities:
             add:
