@@ -131,12 +131,11 @@ spec:
       - name: kilo-dir
         hostPath:
           path: /var/lib/kilo
+      - name: kubeconfig
+        emptyDir: {}
       - name: scripts
         configMap:
           name: kilo-scripts
-      - name: kubeconfig
-        hostPath:
-          path: /etc/kilo-kubeconfig
       - name: k3s-agent
         hostPath:
           path: /var/lib/rancher/k3s/agent

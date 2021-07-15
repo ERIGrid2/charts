@@ -8,7 +8,6 @@ metadata:
 data:
   init.sh: |
     #!/bin/sh
-
     cat > /etc/kubernetes/kubeconfig <<EOF
         apiVersion: v1
         kind: Config
