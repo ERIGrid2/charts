@@ -1,0 +1,31 @@
+apiVersion: v1
+entries:
+  riasc:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-07-19T12:37:12.293016496Z"
+    dependencies:
+    - alias: s3
+      condition: s3.enabled
+      name: minio
+      repository: https://helm.min.io/
+      version: 8.0.9
+    description: Research Infrastructure as Code
+    digest: 2fd77d03e632f0509b5adb94ee9d0fcfbcb651885c48c6de4615640e99b4052f
+    home: https://riasc.fein-aachen.org
+    icon: https://raw.githubusercontent.com/RIasCode/website/master/static/img/logos/riasc.svg
+    keywords:
+    - research
+    - infrastructure
+    maintainers:
+    - email: svogel2@eonerc.rwth-aachen.de
+      name: Steffen Vogel
+      url: https://www.steffenvogel.de
+    name: riasc
+    sources:
+    - http://github.com/riascode/charts
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/riasc-0.2.0/riasc-0.2.0.tgz
+    version: 0.2.0
+generated: "2021-07-19T12:37:12.03893511Z"
