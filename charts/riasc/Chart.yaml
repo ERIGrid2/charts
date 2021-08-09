@@ -6,9 +6,9 @@ keywords:
 - research
 - infrastructure
 
-home: https://riasc.fein-aachen.org
+home: https://riasc.eu
 sources:
-- http://github.com/riascode/charts
+- http://github.com/ERIGrid2/charts
 
 maintainers:
 - name: Steffen Vogel

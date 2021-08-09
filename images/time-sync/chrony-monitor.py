@@ -5,7 +5,7 @@ import os
 import subprocess
 import time
 
-ANNOTATION_PREFIX = 'time-sync.riasc.io'
+ANNOTATION_PREFIX = 'time-sync.riasc.eu'
 
 NODE_NAME = os.environ.get('NODE_NAME', 'infis-pi')
 
