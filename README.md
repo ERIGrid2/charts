@@ -4,7 +4,7 @@ The ERIGrid 2.0 Helm charts are a collection of applications packaged for easy d
 ## Usage
 
 ```bash
-helm repo add erigrid2 https://erigrid2.github.com/charts/
+helm repo add erigrid2 https://erigrid2.github.io/charts/
 helm repo update
 ```
 
