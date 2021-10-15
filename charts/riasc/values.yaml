@@ -10,7 +10,7 @@ s3:
     node-role.kubernetes.io/master: "true"
 
 # Time synchronization
-time_sync:
+time-sync:
   enabled: true
 
   ntp:
@@ -18,16 +18,17 @@ time_sync:
     - ntp1.rwth-aachen.de
     - ntp2.rwth-aachen.de
 
-# Virtual Private Overlay Network
-network:
-  kilo:
-    enabled: false
+# Network related services
 
-  multus:
-    enabled: false
+## Virtual networking
+kilo:
+  enabled: true
 
-  flent:
-    enabled: false
+multus:
+  enabled: true
+
+flent:
+  enabled: false
 
 # User workloads which should deployed in the RIasC cluster
 # workloads:

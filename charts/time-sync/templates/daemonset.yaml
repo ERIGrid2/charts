@@ -1,0 +1,98 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace: riasc-system
+  name: {{ include "time-sync.fullname" . }}
+  labels:
+    {{- include "time-sync.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      name: ntp
+  template:
+    metadata:
+      labels:
+        name: ntp
+    spec:
+      serviceAccount: time-sync
+      hostNetwork: true # for IEEE1588/PTP
+      containers:
+      - name: chrony
+        image: erigrid/time-sync
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - rm -f /run/chronyd.pid; chronyd -dd -f /etc/chrony.conf
+        securityContext:
+          privileged: true
+          # capabilities:
+          #   add:
+          #   - SYS_TIME
+        volumeMounts:
+        - mountPath: /dev
+          name: dev
+        - mountPath: /etc/chrony.conf
+          name: config
+          subPath: chrony.conf
+          readOnly: true
+        - mountPath: /run/
+          name: run
+        - mountPath: /var/lib/chrony
+          name: var
+
+      - name: chrony-monitor
+        image: erigrid/time-sync
+        volumeMounts:
+        - mountPath: /run/
+          name: run
+        - mountPath: /var/lib/chrony
+          name: var
+
+      - name: gpsd
+        image: erigrid/time-sync
+        command:
+        - /bin/sh
+        args:
+        - -c
+        - while [ ! -S /run/chrony.ttyAMA0.sock ]; do sleep 1; done; sleep 1; gpsd -n -N -D4 /dev/ttyAMA0
+        securityContext:
+          privileged: true
+          # capabilities:
+          #   add:
+          #   - SYS_NICE
+        volumeMounts:
+        - mountPath: /dev
+          name: dev
+        - mountPath: /run/
+          name: run
+
+      # - name: ptp4l
+      #   image: erigrid/time-sync
+      #   command:
+      #   - ptp4l
+      #   args: [
+      #     '-m', '-i', 'eno1'
+      #   ]
+      #   securityContext:
+      #     privileged: true
+      #   volumeMounts:
+      #   - mountPath: /dev
+      #     name: dev
+      #   - mountPath: /run/
+      #     name: run
+
+      volumes:
+      - name: dev
+        hostPath:
+          path: /dev
+      - name: config
+        configMap:
+          name: {{ include "time-sync.fullname" . }}
+      - name: run
+        emptyDir:
+      - name: var
+        hostPath:
+          path: /var/lib/chrony
+          type: DirectoryOrCreate

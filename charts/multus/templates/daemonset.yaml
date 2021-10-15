@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: kube-multus-ds
+  namespace: kube-system
+  labels:
+    tier: node
+    app: multus
+    name: multus
+spec:
+  selector:
+    matchLabels:
+      name: multus
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        tier: node
+        app: multus
+        name: multus
+    spec:
+      hostNetwork: true
+      tolerations:
+      - operator: Exists
+        effect: NoSchedule
+      serviceAccountName: multus
+      containers:
+      - name: kube-multus
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni:v3.7.2
+        command: ["/entrypoint.sh"]
+        args:
+        - "--multus-conf-file=auto"
+        - "--cni-version=0.3.1"
+        - "--multus-kubeconfig-file-host=/var/lib/rancher/k3s/agent/etc/cni/net.d/multus.d/multus.kubeconfig"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "50Mi"
+          limits:
+            cpu: "100m"
+            memory: "50Mi"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cni
+          mountPath: /host/etc/cni/net.d
+        - name: cnibin
+          mountPath: /host/opt/cni/bin
+        - name: multus-cfg
+          mountPath: /tmp/multus-conf
+      - name: install-cni
+        image: squat/kilo
+        command:
+        - /bin/sh
+        - -c
+        - set -e -x;
+          cp /opt/cni/bin/* /host/opt/cni/bin/;
+          TMP_CONF="$CNI_CONF_NAME".tmp;
+          echo "$CNI_NETWORK_CONFIG" > $TMP_CONF;
+          rm -f /host/etc/cni/net.d/*;
+          mv $TMP_CONF /host/etc/cni/net.d/$CNI_CONF_NAME
+        env:
+        - name: CNI_CONF_NAME
+          value: 10-kilo.conflist
+        - name: CNI_NETWORK_CONFIG
+          valueFrom:
+            configMapKeyRef:
+              name: kilo
+              key: cni-conf.json
+        volumeMounts:
+        - name: cni
+          mountPath: /host/etc/cni/net.d
+        - name: cnibin
+          mountPath: /host/opt/cni/bin
+
+      terminationGracePeriodSeconds: 10
+      volumes:
+        - name: cni
+          hostPath:
+            path: /var/lib/rancher/k3s/agent/etc/cni/net.d
+        - name: cnibin
+          hostPath:
+            path: /var/lib/rancher/k3s/data/current/bin
+        - name: multus-cfg
+          configMap:
+            name: multus-cni-config
+            items:
+            - key: cni-conf.json
+              path: 70-multus.conf
