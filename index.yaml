@@ -15,8 +15,7 @@ entries:
   - apiVersion: v2
     appVersion: 1.16.0
     created: "2021-10-15T12:05:27.573788103+02:00"
-    description: Kilo is a multi-cloud network overlay built on WireGuard and designed
-      for Kubernetes (k8s + wg = kg)
+    description: Kilo is a multi-cloud network overlay built on WireGuard and designed for Kubernetes (k8s + wg = kg)
     digest: 2f04005696de79fc95834df8a50bce0cd775d2f38f576f6a6e7c9f1a5856fdeb
     name: kilo
     type: application
@@ -37,6 +36,16 @@ entries:
   netem:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2021-10-15T10:25:59.713565942Z"
+    description: A Helm chart for Kubernetes
+    digest: 780bfbda4b48ec282cb77407b7eaf6a94eab2a1aed7344c95058eae91874c922
+    name: netem
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/netem-0.2.0/netem-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2021-10-15T12:05:27.928332307+02:00"
     description: A Helm chart for Kubernetes
     digest: 97719bcfa06552be87f5e9b4f3e5474dfc6c6079e1dcc8d0f4b29bc87be56d65
@@ -44,17 +53,6 @@ entries:
     type: application
     urls:
     - https://github.com/ERIGrid2/charts/releases/download/netem-0.1.0/netem-0.1.0.tgz
-    version: 0.1.0
-  time-sync:
-  - apiVersion: v2
-    appVersion: 1.16.0
-    created: "2021-10-15T12:05:28.104733905+02:00"
-    description: A Helm chart for Kubernetes
-    digest: 4ae408969e94d26d1a5c3bf6905d60bbf915b8cbf2921984cc695212f9bcef0f
-    name: time-sync
-    type: application
-    urls:
-    - https://github.com/ERIGrid2/charts/releases/download/time-sync-0.1.0/time-sync-0.1.0.tgz
     version: 0.1.0
   riasc:
   - apiVersion: v2
@@ -146,4 +144,15 @@ entries:
     urls:
     - https://github.com/ERIGrid2/charts/releases/download/riasc-0.2.0/riasc-0.2.0.tgz
     version: 0.2.0
+  time-sync:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T12:05:28.104733905+02:00"
+    description: A Helm chart for Kubernetes
+    digest: 4ae408969e94d26d1a5c3bf6905d60bbf915b8cbf2921984cc695212f9bcef0f
+    name: time-sync
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/time-sync-0.1.0/time-sync-0.1.0.tgz
+    version: 0.1.0
 generated: "2021-07-19T12:39:12.03893511Z"
