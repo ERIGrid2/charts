@@ -1,6 +1,6 @@
 apiVersion: v1
 entries:
- flent:
+  flent:
   - apiVersion: v2
     appVersion: 1.16.0
     created: "2021-10-15T12:05:27.38976584+02:00"
