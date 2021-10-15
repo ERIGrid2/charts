@@ -3,6 +3,41 @@ entries:
   riasc:
   - apiVersion: v2
     appVersion: 1.16.0
+    created: "2021-10-15T09:45:05.455273688Z"
+    dependencies:
+    - alias: s3
+      condition: s3.enabled
+      name: minio
+      repository: https://helm.min.io/
+      version: 8.0.9
+    - condition: gatekeeper.enabled
+      name: gatekeeper
+      repository: https://open-policy-agent.github.io/gatekeeper/charts
+      version: 3.7.0-beta.2
+    - condition: villas.enabled
+      name: villas
+      repository: https://packages.fein-aachen.org/helm/charts/
+      version: 0.6.1
+    description: Research Infrastructure as Code
+    digest: 221576a5f0794c55c96c8db8e515a2b5368f4424f205e41ae91a91e135c426f4
+    home: https://riasc.eu
+    icon: https://raw.githubusercontent.com/RIasCode/website/master/static/img/logos/riasc.svg
+    keywords:
+    - research
+    - infrastructure
+    maintainers:
+    - email: svogel2@eonerc.rwth-aachen.de
+      name: Steffen Vogel
+      url: https://www.steffenvogel.de
+    name: riasc
+    sources:
+    - http://github.com/ERIGrid2/charts
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/riasc-0.3.0/riasc-0.3.0.tgz
+    version: 0.3.0
+  - apiVersion: v2
+    appVersion: 1.16.0
     created: "2021-08-09T17:59:07.638388431Z"
     dependencies:
     - alias: s3
