@@ -26,6 +26,7 @@ jobs:
 
       - name: Add dependency repos
         run: |
+          helm repo add erigrid2 https://erigrid2.github.io/charts/
           helm repo add minio https://helm.min.io/
           helm repo add fein https://packages.fein-aachen.org/helm/charts/
           helm repo add bitnami https://charts.bitnami.com/bitnami
