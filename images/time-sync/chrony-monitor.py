@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from kubernetes import client, config
 import logging
 import os
