@@ -9,6 +9,13 @@ s3:
   nodeSelector:
     node-role.kubernetes.io/master: "true"
 
+gatekeeper:
+  enabled: true
+  psp:
+    enabled: false
+
+  disableValidatingWebhook: true
+
 # Time synchronization
 time-sync:
   enabled: true
@@ -38,3 +45,9 @@ flent:
 #   node: infis-pi
 #   env:
 #     KEY: VALUE
+
+# Cluster-external devices
+# devices:
+# - name: rwth-abb-pmu-1
+#   external_ip: 134.130.169.123
+#   

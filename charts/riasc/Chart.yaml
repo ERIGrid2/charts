@@ -30,7 +30,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.1
+version: 0.3.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -43,3 +43,38 @@ dependencies:
   repository: https://helm.min.io/
   condition: "s3.enabled"
   alias: s3
+
+- name: gatekeeper
+  version: 3.7.0-beta.2
+  repository: https://open-policy-agent.github.io/gatekeeper/charts
+  condition: gatekeeper.enabled
+
+# - name: time-sync
+#   version: 0.1.0
+#   repository: https://erigrid2.github.io/charts/
+#   condition: time-sync.enabled
+
+# - name: kilo
+#   version: 0.1.0
+#   repository: https://erigrid2.github.io/charts/
+#   condition: kilo.enabled
+
+# - name: flent
+#   version: 0.1.0
+#   repository: https://erigrid2.github.io/charts/
+#   condition: flent.enabled
+
+# - name: netem
+#   version: 0.1.0
+#   repository: https://erigrid2.github.io/charts/
+#   condition: netem.enabled
+
+# - name: multus
+#   version: 0.1.0
+#   repository: https://erigrid2.github.io/charts/
+#   condition: multus.enabled
+
+- name: villas
+  version: 0.6.1
+  repository: https://packages.fein-aachen.org/helm/charts/
+  condition: villas.enabled
