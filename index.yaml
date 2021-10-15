@@ -1,5 +1,61 @@
 apiVersion: v1
 entries:
+ flent:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T12:05:27.38976584+02:00"
+    description: Flent - The flexible network tester
+    digest: cdddbf28d17eaa16439ef3c2feb495e32fbb21fc3a1a996a1d75776bcf090dd7
+    name: flent
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/flent-0.1.0/flent-0.1.0.tgz
+    version: 0.1.0
+  kilo:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T12:05:27.573788103+02:00"
+    description: Kilo is a multi-cloud network overlay built on WireGuard and designed
+      for Kubernetes (k8s + wg = kg)
+    digest: 2f04005696de79fc95834df8a50bce0cd775d2f38f576f6a6e7c9f1a5856fdeb
+    name: kilo
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/kilo-0.1.0/kilo-0.1.0.tgz
+    version: 0.1.0
+  multus:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T12:05:27.748647004+02:00"
+    description: A CNI meta-plugin for multi-homed pods in Kubernetes
+    digest: 49716821fc753eb0403030f070f8d4575d62004c3db1ef0558d66fb242a878eb
+    name: multus
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/multus-0.1.0/multus-0.1.0.tgz
+    version: 0.1.0
+  netem:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T12:05:27.928332307+02:00"
+    description: A Helm chart for Kubernetes
+    digest: 97719bcfa06552be87f5e9b4f3e5474dfc6c6079e1dcc8d0f4b29bc87be56d65
+    name: netem
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/netem-0.1.0/netem-0.1.0.tgz
+    version: 0.1.0
+  time-sync:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-10-15T12:05:28.104733905+02:00"
+    description: A Helm chart for Kubernetes
+    digest: 4ae408969e94d26d1a5c3bf6905d60bbf915b8cbf2921984cc695212f9bcef0f
+    name: time-sync
+    type: application
+    urls:
+    - https://github.com/ERIGrid2/charts/releases/download/time-sync-0.1.0/time-sync-0.1.0.tgz
+    version: 0.1.0
   riasc:
   - apiVersion: v2
     appVersion: 1.16.0
@@ -90,4 +146,4 @@ entries:
     urls:
     - https://github.com/ERIGrid2/charts/releases/download/riasc-0.2.0/riasc-0.2.0.tgz
     version: 0.2.0
-generated: "2021-07-19T12:37:12.03893511Z"
+generated: "2021-07-19T12:38:12.03893511Z"
