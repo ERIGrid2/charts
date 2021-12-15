@@ -9,7 +9,7 @@ PLATFORMS=linux/arm/v7,linux/arm64,linux/amd64
 if (( $# >= 1)); then
 	IMAGES=$@
 else
-	IMAGES="multus-cni time-sync flent"
+	IMAGES="time-sync perfsonar-testpoint netem"
 fi
 
 function docker_init_buildkit() {

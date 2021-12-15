@@ -147,7 +147,7 @@ spec:
           mountPath: /var/run
 
       - name: pscheduler-ticker
-        image: erigrid/perfonar
+        image: erigrid/perfsonar-testpoint
         command: /usr/bin/python3
         args: [ /usr/libexec/pscheduler/daemons/ticker,
           --daemon, 
@@ -163,7 +163,7 @@ spec:
           readOnly: true
 
       - name: pscheduler-archiver
-        image: erigrid/perfonar
+        image: erigrid/perfsonar-testpoint
         command: /usr/bin/python3
         args: [ /usr/libexec/pscheduler/daemons/archiver,
           --daemon, 
@@ -179,7 +179,7 @@ spec:
           readOnly: true
 
       - name: pscheduler-scheduler
-        image: erigrid/perfonar
+        image: erigrid/perfsonar-testpoint
         command: /usr/bin/python3
         args: [ /usr/libexec/pscheduler/daemons/scheduler,
           --daemon, 
@@ -195,7 +195,7 @@ spec:
           readOnly: true
 
       - name: pscheduler-runner
-        image: erigrid/perfonar
+        image: erigrid/perfsonar-testpoint
         command: /usr/bin/python3
         args: [ /usr/libexec/pscheduler/daemons/runner,
           --daemon, 
@@ -223,7 +223,7 @@ spec:
           readOnly: true
 
       - name: psconfig_pscheduler_agent
-        image: erigrid/perfonar
+        image: erigrid/perfsonar-testpoint
         command: /usr/lib/perfsonar/bin/psconfig_pscheduler_agent
         args: [
           --config, /etc/perfsonar/psconfig/pscheduler-agent.json,
