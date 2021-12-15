@@ -2,6 +2,25 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+testpoint:
+  enabled: true
+
+  remotes: []
+
+  lookup_service:
+    enabled: false
+
+    site_name: RWTH Aachen University
+    domain: rwth-aachen.de
+    city: Aachen
+    region: NRW
+    country: DE
+    zip_code: 52064
+    latitude: 50.775345
+    longitude: 6.083887
+    site_projects:
+    - ERIGrid 2.0
+
 replicaCount: 1
 
 image:

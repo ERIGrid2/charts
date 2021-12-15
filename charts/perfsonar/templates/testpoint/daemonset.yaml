@@ -38,6 +38,7 @@ spec:
       securityContext:
         {{- toYaml .Values.testpoint.podSecurityContext | nindent 8 }}
 
+{{- if .Values.testpoint.lookup_service.enabled }}
       initContainers:
       - name: ls_registration_daemon
         chown=perfsonar:perfsonar
@@ -48,48 +49,26 @@ spec:
         - --logger=/etc/perfsonar/lsregistrationdaemon-logger.conf
         - --user=perfsonar
         - --group=perfsonar
+        volumeMounts:
+        - name: config
+          mountPath: /etc/perfsonar/lsregistrationdaemon.conf
+          subPath: lsregistrationdaemon.conf
+{{- end }}
 
       containers:
       - name: owamp
         image: erigrid/perfsonar
         command: /usr/bin/owampd
-        args: 
-        - -c
-        - /etc/owamp-server
-        - -R
-        - /var/run
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
-        volumeMounts:
-        - name: run
-          mountPath: /var/run
-      - name: httpd
-        image: erigrid/perfsonar
-        command: /usr/bin/pidproxy
-        args: 
-        - /var/run/httpd.pid
-        - /bin/bash
-        - -c "/usr/sbin/httpd -DFOREGROUND -k start"
-        resources:
-          limits:
-            memory: 200Mi
-          requests:
-            cpu: 100m
-            memory: 200Mi
-        volumeMounts:
-        - name: run
-          mountPath: /var/run
-      - name: postgresql
-        image: postgres:14.1
-        env:
-        - name: POSTGRES_USER
-          value: pscheduler
-        - name: POSTGRES_PASSWORD
-          value: mysecretpassword
+        args: [
+          -c, /etc/owamp-server,
+          -R, /var/run
+        ]
+        ports:
+        - name: owamp
+          containerPort: 861
+        # - name: owamp-range
+        #   containerPort: 8760-9960
+
         resources:
           limits:
             memory: 200Mi
@@ -100,61 +79,171 @@ spec:
         - name: run
           mountPath: /var/run
 
-[program:postgresql]
-command=/usr/pgsql-10/bin/postgres -D /var/lib/pgsql/10/data
-user=postgres
+      - name: twamp
+        image: erigrid/perfsonar
+        command: /usr/bin/twampd
+        args: [
+          -c, /etc/twamp-server,
+          -R, /var/run
+        ]
+        ports:
+        - name: twamp
+          containerPort: 862
+        # - name: twamp-range
+        #   containerPort: 18760-19960
+
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+
+      - name: httpd
+        image: erigrid/perfsonar
+        command: /usr/bin/pidproxy
+        args: [
+          /var/run/httpd.pid, /bin/bash,
+          -c, "/usr/sbin/httpd -DFOREGROUND -k start"
+        ]
+        ports:
+        - containerPort: 443
+          name: https
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+
+      - name: postgresql
+        image: postgres:14.1
+        env:        
+        - name: POSTGRES_USER
+          valueFrom:
+          secretKeyRef:
+            name: {{ include "perfsonar.fullname" . }}-testpoint
+            key: db_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+          secretKeyRef:
+            name: {{ include "perfsonar.fullname" . }}-testpoint
+            key: db_password
+
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
 
       - name: pscheduler-ticker
         image: erigrid/perfonar
         command: /usr/bin/python3
-        args:
-        - /usr/libexec/pscheduler/daemons/ticker
-        - --daemon
-        - --pid-file
-        - /var/run/pscheduler-ticker.pid
-        - --dsn @/etc/pscheduler/database/database-dsn 
+        args: [ /usr/libexec/pscheduler/daemons/ticker,
+          --daemon, 
+          --pid-file, /var/run/pscheduler-ticker.pid,
+          --dsn, "@/etc/pscheduler/database/database-dsn"
+        ]
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+        - name: config
+          mountPath: /etc/perfsonar/database-dsn
+          subPath: database-dsn
+          readOnly: true
 
       - name: pscheduler-archiver
         image: erigrid/perfonar
         command: /usr/bin/python3
-        args:
-        - /usr/libexec/pscheduler/daemons/archiver
-        - --daemon
-        - --pid-file
-        - /var/run/pscheduler-archiver.pid
-        - --dsn @/etc/pscheduler/database/database-dsn 
+        args: [ /usr/libexec/pscheduler/daemons/archiver,
+          --daemon, 
+          --pid-file, /var/run/pscheduler-archiver.pid,
+          --dsn, "@/etc/pscheduler/database/database-dsn"
+        ]
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+        - name: config
+          mountPath: /etc/perfsonar/database-dsn
+          subPath: database-dsn
+          readOnly: true
 
       - name: pscheduler-scheduler
         image: erigrid/perfonar
         command: /usr/bin/python3
-        args:
-        - /usr/libexec/pscheduler/daemons/scheduler
-        - --daemon
-        - --pid-file
-        - /var/run/pscheduler-scheduler.pid
-        - --dsn @/etc/pscheduler/database/database-dsn 
+        args: [ /usr/libexec/pscheduler/daemons/scheduler,
+          --daemon, 
+          --pid-file, /var/run/pscheduler-scheduler.pid,
+          --dsn, "@/etc/pscheduler/database/database-dsn"
+        ]
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+        - name: config
+          mountPath: /etc/perfsonar/database-dsn
+          subPath: database-dsn
+          readOnly: true
 
       - name: pscheduler-runner
         image: erigrid/perfonar
         command: /usr/bin/python3
-        args:
-        - /usr/libexec/pscheduler/daemons/runner
-        - --daemon
-        - --pid-file
-        - /var/run/pscheduler-runner.pid
-        - --dsn @/etc/pscheduler/database/database-dsn 
+        args: [ /usr/libexec/pscheduler/daemons/runner,
+          --daemon, 
+          --pid-file, /var/run/pscheduler-runner.pid,
+          --dsn, "@/etc/pscheduler/database/database-dsn"
+        ]
+        ports:
+        # - name: simplestream
+        #   containerPort: 5890-5900
+        - name: nuttcp
+          containerPort: 5000
+        - name: nuttcp-2
+          containerPort: 5101
+        - name: iperf2
+          containerPort: 5001
+        - name: iperf3
+          containerPort: 5201
+
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+        - name: config
+          mountPath: /etc/perfsonar/database-dsn
+          subPath: database-dsn
+          readOnly: true
 
       - name: psconfig_pscheduler_agent
         image: erigrid/perfonar
         command: /usr/lib/perfsonar/bin/psconfig_pscheduler_agent
-        args: 
-        - --config=/etc/perfsonar/psconfig/pscheduler-agent.json
-        - --logger=/etc/perfsonar/psconfig/pscheduler-agent-logger.conf
-        - --pidfile=/var/run/psconfig-pscheduler-agent.pid
-        - --user=perfsonar
-        - --group=perfsonar
-
+        args: [
+          --config, /etc/perfsonar/psconfig/pscheduler-agent.json,
+          --logger, /etc/perfsonar/psconfig/pscheduler-agent-logger.conf,
+          --pidfile, /var/run/psconfig-pscheduler-agent.pid,
+          --user=perfsonar, --group=perfsonar
+        ]
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+        - name: config
+          mountPath: /etc/perfsonar/psconfig/pscheduler-agent.json
+          subPath: pscheduler-agent.json
+          readOnly: true
+          
 
       volumes:
       - name: run
         emptyDir:
+      - name: config
+        secret:
+          secretName: {{ include "perfsonar.fullname" . }}-testpoint
+      
