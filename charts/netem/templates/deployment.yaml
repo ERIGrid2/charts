@@ -49,4 +49,4 @@ spec:
       volumes:
       - name: webhook-certs
         secret:
-          secretName: k8s-netem-webhook-certs
+          secretName: k8s-netem-webhook-cert
