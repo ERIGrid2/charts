@@ -9,4 +9,4 @@ RUN apt-get update && \
 
 RUN pip3 install git+https://github.com/erigrid2/k8s-netem@30462eaddc0bb4e5555434c1977295f26f689c43
 
-CMD ["k8s-netem"]
+CMD ["k8s-netem-sidecar"]
