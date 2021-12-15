@@ -1,0 +1,160 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "perfsonar.fullname" . }}-testpoint
+  labels:
+    {{- include "perfsonar.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "perfsonar.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.testpoint.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "perfsonar.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.testpoint.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.testpoint.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.testpoint.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "perfsonar.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.testpoint.podSecurityContext | nindent 8 }}
+
+      initContainers:
+      - name: ls_registration_daemon
+        chown=perfsonar:perfsonar
+        command: /usr/lib/perfsonar/bin/lsregistrationdaemon.pl
+        args:
+        - --config=/etc/perfsonar/lsregistrationdaemon.conf
+        - --pidfile=/var/run/lsregistrationdaemon.pid
+        - --logger=/etc/perfsonar/lsregistrationdaemon-logger.conf
+        - --user=perfsonar
+        - --group=perfsonar
+
+      containers:
+      - name: owamp
+        image: erigrid/perfsonar
+        command: /usr/bin/owampd
+        args: 
+        - -c
+        - /etc/owamp-server
+        - -R
+        - /var/run
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+      - name: httpd
+        image: erigrid/perfsonar
+        command: /usr/bin/pidproxy
+        args: 
+        - /var/run/httpd.pid
+        - /bin/bash
+        - -c "/usr/sbin/httpd -DFOREGROUND -k start"
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+      - name: postgresql
+        image: postgres:14.1
+        env:
+        - name: POSTGRES_USER
+          value: pscheduler
+        - name: POSTGRES_PASSWORD
+          value: mysecretpassword
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: run
+          mountPath: /var/run
+
+[program:postgresql]
+command=/usr/pgsql-10/bin/postgres -D /var/lib/pgsql/10/data
+user=postgres
+
+      - name: pscheduler-ticker
+        image: erigrid/perfonar
+        command: /usr/bin/python3
+        args:
+        - /usr/libexec/pscheduler/daemons/ticker
+        - --daemon
+        - --pid-file
+        - /var/run/pscheduler-ticker.pid
+        - --dsn @/etc/pscheduler/database/database-dsn 
+
+      - name: pscheduler-archiver
+        image: erigrid/perfonar
+        command: /usr/bin/python3
+        args:
+        - /usr/libexec/pscheduler/daemons/archiver
+        - --daemon
+        - --pid-file
+        - /var/run/pscheduler-archiver.pid
+        - --dsn @/etc/pscheduler/database/database-dsn 
+
+      - name: pscheduler-scheduler
+        image: erigrid/perfonar
+        command: /usr/bin/python3
+        args:
+        - /usr/libexec/pscheduler/daemons/scheduler
+        - --daemon
+        - --pid-file
+        - /var/run/pscheduler-scheduler.pid
+        - --dsn @/etc/pscheduler/database/database-dsn 
+
+      - name: pscheduler-runner
+        image: erigrid/perfonar
+        command: /usr/bin/python3
+        args:
+        - /usr/libexec/pscheduler/daemons/runner
+        - --daemon
+        - --pid-file
+        - /var/run/pscheduler-runner.pid
+        - --dsn @/etc/pscheduler/database/database-dsn 
+
+      - name: psconfig_pscheduler_agent
+        image: erigrid/perfonar
+        command: /usr/lib/perfsonar/bin/psconfig_pscheduler_agent
+        args: 
+        - --config=/etc/perfsonar/psconfig/pscheduler-agent.json
+        - --logger=/etc/perfsonar/psconfig/pscheduler-agent-logger.conf
+        - --pidfile=/var/run/psconfig-pscheduler-agent.pid
+        - --user=perfsonar
+        - --group=perfsonar
+
+
+      volumes:
+      - name: run
+        emptyDir:
