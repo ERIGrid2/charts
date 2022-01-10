@@ -1,4 +1,3 @@
-{{- if .Values.time_sync.enabled }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -11,46 +10,71 @@ data:
 
   chrony.conf: |
     user root
-    allow
     pidfile /run/chronyd.pid
+
+    # Stored on hostpath volume
     driftfile /var/lib/chrony/drift
-    local stratum 1 orphan
+
+{{- if .Values.ntp.server.local }}
+    local stratum {{ .Values.ntp.server.stratum }}{{ ternary " orphan" "" .Values.ntp.server.orphan }}
+{{- end }}
+
     rtcsync
     makestep 1.0 3
     hwtimestamp *
+
+{{- if .Values.ntp.server.enabled }}
+{{- range .Values.ntp.server.allow }}
+    allow {{ . }}
+{{- end }}
+{{- range .Values.ntp.server.deny }}
+    deny {{ . }}
+{{- end }}
+{{- endif }}
     
+{{- if .Values.gps.enabled -}}
     # https://chrony.tuxfamily.org/documentation.html
     # https://gpsd.gitlab.io/gpsd/gpsd-time-service-howto.html#_feeding_chrony_from_gpsd
     # gspd is looking for
     # /var/run/chrony.pps0.sock
-    
-    refclock SOCK /run/chrony.ttyAMA0.sock  refid GPS   precision 1e-1 offset 0.9999
-    refclock SOCK /run/chrony.pps0.sock     refid PPS0  precision 1e-7 lock GPS
-    refclock PPS  /dev/pps0                 refid PPS1  precision 1e-7 lock GPS
-    # refclock PHC  /dev/ptp0                 refid PTP
-    # NTP Servers
-    pool   europe.pool.ntp.org    iburst  minpoll 4  maxpoll 4
-
-{{- range .Values.time_sync.ntp.servers }}
-    server  {{ . }}  iburst  minpoll 4  maxpoll 4
+    refclock SOCK /run/chrony.{{ .Values.gps.device }}.sock refid GPS   precision 1e-1 offset 0.9999
+    refclock SOCK /run/chrony.pps0.sock refid PPS0 precision 1e-7 lock GPS
+{{- endif }}
+{{- if .Values.pps.enabled }}
+    refclock PPS  /dev/{{ .Values.pps.device }} refid PPS1 precision 1e-7 lock GPS
+{{- endif }}
+{{- if .Values.ptp.enabled }}
+    refclock PHC  /dev/{{ .Values.ptp.device }} refid PTP1
+{{- endif }}
+  
+    ## NTP servers/peers/pools
+{{- range (concat .Values.ntp.servers .Values.defaultServers) }}
+    {{ include "riasc.ntp.server" . }}
 {{- end }}
-
-    # Some Stratum1 Servers
-    # https://www.meinbergglobal.com/english/glossary/public-time-server.htm
-    # http://support.ntp.org/bin/view/Servers/StratumOneTimeServers
-    
-    ## Physikalisch-Technische Bundesanstalt (PTB), Braunschweig, Germany
-    server  ptbtime1.ptb.de  iburst  minpoll 4  maxpoll 4
-    server  ptbtime2.ptb.de  iburst  minpoll 4  maxpoll 4
-    server  ptbtime3.ptb.de  iburst  minpoll 4  maxpoll 4
-    
-    ## Royal Observatory of Belgium
-    server  ntp1.oma.be  iburst  minpoll 4  maxpoll 4
-    server  ntp2.oma.be  iburst  minpoll 4  maxpoll 4
 
     # Logging
     log rawmeasurements measurements statistics tracking refclocks tempcomp
     logdir /var/log/chrony
     logbanner 0
     logchange 0.1
+
+    {{- .Values.chrony.extraConfig | default "" }}
+
+{{- if .Values.ptp.enabled }}
+  ptp4l.conf: |
+    [global]
+    slaveOnly {{ ternary 1 0 .Values.ptp.slaveOnly }}
+
+    network_transport {{ .Values.ptp.transport }}
+
+    verbose {{ ternary 1 0 .Valus.ptp.verbose }}
+    logging_level {{ .Values.ptp.loggingLevel }}
+
+    time_stamping {{ .Values.ptp.time_stamping }}
+
+    [{{ .Values.ptp.interface}}]
+    # empty
+
+    {{- .Values.ptp.extraConfig | default "" }}
+    
 {{- end }}

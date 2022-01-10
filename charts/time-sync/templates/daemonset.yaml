@@ -1,11 +1,11 @@
 ---
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   namespace: riasc-system
-  name: {{ include "time-sync.fullname" . }}
+  name: {{ include "time-sync.fullname" $ }}-{{ .name }}
   labels:
-    {{- include "time-sync.labels" . | nindent 4 }}
+    {{- include "time-sync.labels" $ | nindent 4 }}
 spec:
   selector:
     matchLabels:
@@ -15,6 +15,8 @@ spec:
       labels:
         name: ntp
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ .name }}
       serviceAccount: time-sync
       hostNetwork: true # for IEEE1588/PTP
       containers:
@@ -42,21 +44,29 @@ spec:
         - mountPath: /var/lib/chrony
           name: var
 
-      - name: chrony-monitor
+      - name: status
         image: erigrid/time-sync
         volumeMounts:
         - mountPath: /run/
           name: run
         - mountPath: /var/lib/chrony
-          name: var
+          name: var-chrony
 
+{{- if .Values.gps.enabled -}}
       - name: gpsd
         image: erigrid/time-sync
         command:
         - /bin/sh
         args:
         - -c
-        - while [ ! -S /run/chrony.ttyAMA0.sock ]; do sleep 1; done; sleep 1; gpsd -n -N -D4 /dev/ttyAMA0
+        - while [ ! -S /run/chrony.$(GPS_DEVICE).sock ]; do \
+            sleep 1;
+          done;
+          sleep 1;
+          gpsd -n -N -D4 /dev/$(GPS_DEVICE)
+        env:
+        - name: GPS_DEVICE
+          value: {{ .Values.gps.device | quote }}
         securityContext:
           privileged: true
           # capabilities:
@@ -67,32 +77,40 @@ spec:
           name: dev
         - mountPath: /run/
           name: run
-
-      # - name: ptp4l
-      #   image: erigrid/time-sync
-      #   command:
-      #   - ptp4l
-      #   args: [
-      #     '-m', '-i', 'eno1'
-      #   ]
-      #   securityContext:
-      #     privileged: true
-      #   volumeMounts:
-      #   - mountPath: /dev
-      #     name: dev
-      #   - mountPath: /run/
-      #     name: run
-
+{{- end }}
+{{- if .Values.ptp.enabled }}
+      - name: ptp4l
+        image: erigrid/time-sync
+        command:
+        - ptp4l
+        args: [
+          '-f', '/etc/ptp4l.conf'
+        ]
+        env:
+        - name: PTP_INTERFACE
+          value: {{ .Values.ptp.interface | quote }}
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /dev
+          name: dev
+        - mountPath: /run/
+          name: run
+        - mountPath: /etc/ptp4l.conf
+          name: config
+          subPath: ptp4l.conf
+          readOnly: true
+{{- end }}
       volumes:
       - name: dev
         hostPath:
           path: /dev
       - name: config
         configMap:
-          name: {{ include "time-sync.fullname" . }}
+          name: {{ include "time-sync.fullname" $ }}
       - name: run
         emptyDir:
-      - name: var
+      - name: var-chrony
         hostPath:
           path: /var/lib/chrony
           type: DirectoryOrCreate

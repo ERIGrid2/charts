@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+NTP server line for Chrony config
+*/}}
+{{- define "riasc.ntp.server" -}}
+{{ .type | default "server" }} {{ .address }} iburst minpoll {{ .minPoll | default 4 }} maxpoll {{ .maxPoll | default 4 }}
+{{- end }}
