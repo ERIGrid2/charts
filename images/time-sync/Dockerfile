@@ -9,9 +9,9 @@ RUN apt-get update && \
         linuxptp \
         ethtool
 
-RUN pip3 install \
-    kubernetes
+COPY requirements.txt /
+RUN pip3 install -r requirements.txt
 
-COPY chrony-monitor.py /
+COPY status.py /
 
-CMD ["python3", "/chrony-monitor.py"]
+CMD ["python3", "/status.py"]
