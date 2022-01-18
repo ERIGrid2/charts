@@ -41,7 +41,7 @@ dependencies:
 - name: minio
   version: 8.0.9
   repository: https://helm.min.io/
-  condition: "s3.enabled"
+  condition: s3.enabled
   alias: s3
 
 - name: gatekeeper
@@ -58,11 +58,6 @@ dependencies:
   version: 0.1.0
   repository: https://erigrid2.github.io/charts/
   condition: kilo.enabled
-
-- name: flent
-  version: 0.1.0
-  repository: https://erigrid2.github.io/charts/
-  condition: flent.enabled
 
 - name: netem
   version: 0.2.0
