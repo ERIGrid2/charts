@@ -25,14 +25,19 @@ spec:
       tolerations:
       - operator: Exists
         effect: NoSchedule
+      - operator: Exists
+        effect: NoExecute
       serviceAccountName: multus
       containers:
       - name: kube-multus
-        image: ghcr.io/k8snetworkplumbingwg/multus-cni:v3.7.2
-        command: ["/entrypoint.sh"]
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni
+        command: [ "/usr/src/multus-cni/bin/multus-daemon" ]
         args:
-        - "--multus-conf-file=auto"
-        - "--cni-version=0.3.1"
+        - "-cni-version=0.3.1"
+        - "-cni-config-dir=/host/etc/cni/net.d"
+        - "-multus-autoconfig-dir=/host/etc/cni/net.d"
+        - "-multus-log-to-stderr=true"
+        - "-multus-log-level=verbose"
         - "--multus-kubeconfig-file-host=/var/lib/rancher/k3s/agent/etc/cni/net.d/multus.d/multus.kubeconfig"
         resources:
           requests:
@@ -48,44 +53,45 @@ spec:
           mountPath: /host/etc/cni/net.d
         - name: cnibin
           mountPath: /host/opt/cni/bin
-        - name: multus-cfg
-          mountPath: /tmp/multus-conf
-      - name: install-cni
-        image: squat/kilo
+      initContainers:
+      - name: install-multus-binary
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni
         command:
-        - /bin/sh
-        - -c
-        - set -e -x;
-          cp /opt/cni/bin/* /host/opt/cni/bin/;
-          TMP_CONF="$CNI_CONF_NAME".tmp;
-          echo "$CNI_NETWORK_CONFIG" > $TMP_CONF;
-          rm -f /host/etc/cni/net.d/*;
-          mv $TMP_CONF /host/etc/cni/net.d/$CNI_CONF_NAME
-        env:
-        - name: CNI_CONF_NAME
-          value: 10-kilo.conflist
-        - name: CNI_NETWORK_CONFIG
-          valueFrom:
-            configMapKeyRef:
-              name: kilo
-              key: cni-conf.json
+        - "cp"
+        - "/usr/src/multus-cni/bin/multus"
+        - "/host/opt/cni/bin/multus"
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "15Mi"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: cnibin
+          mountPath: /host/opt/cni/bin
+          mountPropagation: Bidirectional
+      - name: generate-kubeconfig
+        image: ghcr.io/k8snetworkplumbingwg/multus-cni
+        command:
+        - "/usr/src/multus-cni/bin/generate-kubeconfig"
+        args:
+        - "-k8s-service-host=$(KUBERNETES_SERVICE_HOST)"
+        - "-k8s-service-port=$(KUBERNETES_SERVICE_PORT)"
+        resources:
+          requests:
+            cpu: "10m"
+            memory: "15Mi"
+        securityContext:
+          privileged: true
         volumeMounts:
         - name: cni
           mountPath: /host/etc/cni/net.d
-        - name: cnibin
-          mountPath: /host/opt/cni/bin
-
+          mountPropagation: Bidirectional
       terminationGracePeriodSeconds: 10
       volumes:
-        - name: cni
-          hostPath:
-            path: /var/lib/rancher/k3s/agent/etc/cni/net.d
-        - name: cnibin
-          hostPath:
-            path: /var/lib/rancher/k3s/data/current/bin
-        - name: multus-cfg
-          configMap:
-            name: multus-cni-config
-            items:
-            - key: cni-conf.json
-              path: 70-multus.conf
+      - name: cni
+        hostPath:
+          path: /var/lib/rancher/k3s/agent/etc/cni/net.d
+      - name: cnibin
+        hostPath:
+          path: /var/lib/rancher/k3s/data/current/bin
