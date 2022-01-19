@@ -3,7 +3,6 @@ kind: Service
 apiVersion: v1
 metadata:
   name: k8s-netem-webhook
-  namespace: riasc-system
   labels:
     {{- include "netem.labels" . | nindent 4 }}
 spec:

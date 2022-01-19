@@ -9,20 +9,25 @@ metadata:
   labels:
     {{- include "netem.labels" . | nindent 4 }}
 webhooks:
-- name: k8s-netem-webhook.riasc-system.svc
+- name: k8s-netem-webhook.{{ .Release.Namespace }}.svc
   sideEffects: None
   admissionReviewVersions:
-  - "v1"
+  - v1
   rules:
-  - operations: ["CREATE", "UPDATE"]
-    apiGroups: [""]
-    apiVersions: ["v1"]
-    resources: ["pods"]
+  - operations:
+    - CREATE
+    - UPDATE
+    apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    resources:
+    - pods
   failurePolicy: Ignore
   clientConfig:
     caBundle: {{ b64enc $ca.Cert }}
     service:
-      namespace: riasc-system
+      namespace: {{ .Release.Namespace }}
       name: k8s-netem-webhook
       path: /mutate
       port: 443

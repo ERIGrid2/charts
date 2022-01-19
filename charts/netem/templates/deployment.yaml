@@ -1,4 +1,3 @@
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -19,13 +18,17 @@ spec:
       name: webhook
     spec:
       serviceAccountName: k8s-netem
+      automountServiceAccountToken: true
       nodeSelector:
-        node-role.kubernetes.io/master: "true"
+        node-role.kubernetes.io/master: ""
       containers:
       - name: webhook
         command: ['k8s-netem-webhook']
         image: erigrid/netem:latest
-        imagePullPolicy: Always
+        imagePullPolicy: Never # image is build by minikube
+        env:
+        - name: DEBUG
+          value: '1'
         ports:
         - containerPort: 443
         volumeMounts:
@@ -46,7 +49,11 @@ spec:
             port: 443
           initialDelaySeconds: 3
           periodSeconds: 5
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 500m
       volumes:
       - name: webhook-certs
         secret:
-          secretName: k8s-netem-webhook-cert
+          secretName: k8s-netem-webhook-certs
