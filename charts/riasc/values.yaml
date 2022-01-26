@@ -8,8 +8,6 @@ villas:
 
 # Time synchronization
 time_sync:
-  enabled: true
-
   configurations: []
 
 ## Virtual networking
@@ -17,6 +15,9 @@ kilo:
   enabled: true
 
 multus:
+  enabled: true
+
+netem:
   enabled: true
 
 projects: []

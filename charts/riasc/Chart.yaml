@@ -40,12 +40,6 @@ appVersion: 1.16.0
 
 dependencies:
 
-- name: time-sync
-  version: 0.1.0
-  repository: https://erigrid2.github.io/charts/
-  alias: time_sync
-  condition: time_sync.enabled
-
 - name: kilo
   version: 0.1.0
   repository: https://erigrid2.github.io/charts/

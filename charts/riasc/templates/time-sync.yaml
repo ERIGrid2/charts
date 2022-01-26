@@ -1,0 +1,10 @@
+{{- range .Values.time_sync.configurations}}
+---
+apiVersion: riasc.eu/v1
+kind: TimeSyncConfig
+metadata:
+  name: {{ .name }}
+  labels:
+    {{- include "riasc.labels" | nindent 3 }}
+spec: {{ unset . "name" | toYaml | nindent 2 }}
+{{- end }}
