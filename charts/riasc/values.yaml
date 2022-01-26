@@ -19,3 +19,19 @@ kilo:
 multus:
   enabled: true
 
+projects: []
+# - name: workshop
+#   users:
+#   - user-c7vzm # Steffen Vogel
+#   - u-r29k4 # Erick Alves
+#   - u-d6gdg	# VTT Partner
+#   - u-6v6t5	# Raussi Petra
+#   - u-6lswk # Oliver Gehrke
+#   - u-ftjfp	# Catalin Gavriluta
+#   - u-4bhdx	# Andren Filip Pröstl
+#   nodes:
+#   - rpi-rwth-1
+#   - rpi-tec-1
+#   - rpi-vtt-1
+#   - rpi-uos-1
+#   - rpi-dtu-1
