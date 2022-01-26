@@ -1,10 +1,12 @@
-# From https://raw.githubusercontent.com/squat/kilo/main/manifests/kilo-k3s-flannel.yaml
+# From https://raw.githubusercontent.com/squat/kilo/0.3.1/manifests/kilo-k3s-flannel.yaml
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kilo
   namespace: kube-system
+  labels:
+    {{- include "kilo.labels" . | nindent 4 }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -25,6 +27,7 @@ rules:
   - peers
   verbs:
   - list
+  - update
   - watch
 - apiGroups:
   - apiextensions.k8s.io
@@ -37,6 +40,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: kilo
+  labels:
+    {{- include "kilo.labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -54,6 +59,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kilo
     app.kubernetes.io/part-of: kilo
+    {{- include "kilo.labels" . | nindent 4 }}
 spec:
   selector:
     matchLabels:
@@ -69,8 +75,7 @@ spec:
       hostNetwork: true
       containers:
       - name: kilo
-        # image: squat/kilo
-        image: erigrid/kilo:arm-abecadf70713dfab03e0ac03f1fbe4b5d585aa91-dirty
+        image: squat/kilo:0.3.1
         args:
         - --kubeconfig=/etc/kubernetes/kubeconfig
         - --hostname=$(NODE_NAME)

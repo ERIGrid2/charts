@@ -4,6 +4,8 @@ kind: ConfigMap
 metadata:
   name: kilo-scripts
   namespace: kube-system
+  labels:
+    {{- include "kilo.labels" . | nindent 4 }}
 data:
   init.sh: |
     #!/bin/sh
