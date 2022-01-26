@@ -1,0 +1,22 @@
+{{- range $name, $config := .Values.configs }}
+{{- if $config.external | default false | not }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "riasc.labels" $ | nindent 4 }}
+data:
+  {{- if $config.yaml }}
+  file: |
+    {{- $config.yaml | toYaml | nindent 4 }}
+  {{- else if $config.json }}
+  file: |
+    {{- $config.json | toJson | nindent 4 }}
+  {{- else if $config.content }}
+  file: |
+    {{- $config.content | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

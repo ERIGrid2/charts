@@ -1,0 +1,96 @@
+{{ range $name, $svc := .Values.services }}
+{{ if empty .ports | not }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+spec:
+  selector:
+    riasc.eu/service: {{ $name }}
+  ports:
+  {{- range .ports }}
+  - protocol: TCP
+    port: {{ . }}
+    targetPort: {{ . }}
+  {{- end }}
+{{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    riasc.eu/service: {{ $name }}
+    {{- include "riasc.labels" $ | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      riasc.eu/service: {{ $name }}
+      {{- include "riasc.selectorLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        riasc.eu/service: {{ $name }}
+        {{- include "riasc.selectorLabels" $ | nindent 8 }}
+    spec:
+      containers:
+      - name: container
+        image: {{ .image }}
+
+        {{- if $svc.entrypoint }}
+        command: {{ include "riasc.stringArray" $svc.entrypoint }}
+        {{- end }}
+
+        {{- if $svc.command }}
+        args: {{ include "riasc.stringArray" $svc.command }}
+        {{- end }}
+
+        {{- if $svc.privileged }}
+        securityContext:
+          privileged: {{ $svc.privileged }}
+        {{- end }}
+
+        {{- if .environment }}
+        env:
+        {{- range $key, $value := .environment }}
+        - name: {{ $key }}
+          value: {{ $value }}
+        {{- end }}
+        {{- end }}
+
+        {{- if .volumes }}  
+        volumeMounts:
+        {{- range $index, $volume := .volumes }}
+        - name: vol-{{ $index }}
+          mountPath: {{ .target | quote }}
+          readOnly: {{ .read_only | default false }}
+        {{- end }}
+        {{- end }}
+
+      {{- if .node }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ .node }}
+      {{- end }}
+
+      {{- if .volumes }}  
+      volumes:
+      {{- range $index, $volume := .volumes }}
+      {{- $type := $volume.type | default "volume" }}
+      - name: vol-{{ $index }}
+        {{- if eq  $type "volume" -}}
+        persistentVolumeClaim:
+          claimName: {{ $volume.source }}
+        {{- else if eq $type "bind" }}
+        hostPath:
+          type: DirectoryOrCreate
+          path: {{ $volume.source }}
+        {{- else if eq $type "tmpfs" }}
+        emptyDir:
+        {{- end }}
+      {{- end }}
+    {{- end }}
+{{- end }}

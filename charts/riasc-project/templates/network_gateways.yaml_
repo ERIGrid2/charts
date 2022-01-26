@@ -1,0 +1,35 @@
+---
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: local-bridge
+spec:
+  config: '{
+            "cniVersion": "0.3.0",
+            "type": "macvlan",
+            "master": "eth0",
+            "ipam": {
+              "type": "dhcp"
+            }
+          }'
+
+{{ range .Values.devices }}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .name }}
+  annotations:
+    k8s.v1.cni.cncf.io/networks: local-bridge
+spec:
+  containers:
+    - name: gateway
+      image: erigrid/ip-gateway
+      nodeSelector:
+        kubernetes.io/hostname: {{ .node }}
+      env:
+      - name: NETWORK_STATUS
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.annotations['k8s.v1.cni.cncf.io/network-status']
+{{- end }}

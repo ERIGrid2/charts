@@ -1,0 +1,18 @@
+{{- range $name, $vol := .Values.volumes }}
+{{- if and ($vol.external | default false | not) (eq ($vol.type | default "volume") "volume") }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "riasc.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: {{ $vol.size | default "1Gi" }}
+{{- end }}
+{{- end }}

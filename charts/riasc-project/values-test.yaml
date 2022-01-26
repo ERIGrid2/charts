@@ -1,0 +1,393 @@
+---
+
+# The workload list allows the user to define a list of containers
+# which are started for the project.
+#
+# The syntax of each workload is similar to Docker Compose files (v3)
+#   See: https://docs.docker.com/compose/compose-file/compose-file-v3/
+
+services:
+
+  villas-rwth:
+    node: rpi-rwth-1
+    image: registry.git.rwth-aachen.de/acs/public/villas/node:master
+    command: node
+
+    ports:
+    - 80
+
+    privileged: true
+
+    configs:
+    - source: villas-rwth
+      target: /etc/villas/node.json
+
+  villas-ntnu:
+    node: ntnu-1
+    image: registry.git.rwth-aachen.de/acs/public/villas/node:master
+    command: node
+
+    ports:
+    - 80
+    
+    configs:
+    - source: villas-ntnu
+      target: /etc/villas/node.json
+
+volumes:
+  results: {}
+
+secrets:
+  password:
+    content: test
+
+configs:
+  villas-ntnu:
+    json:
+      stats: 1
+      nodes:
+        ntnu-opal:
+          type: socket
+          layer: udp
+          in:
+            address: 0.0.0.0:12008
+            signals:
+            - name: FC_current
+              unit: A
+              type: float
+            - name: FC_Pan_H2
+              unit: atm
+              type: float
+            - name: FC_Pca_air
+              unit: atm
+              type: float
+            - name: FC_Tcell
+              unit: C
+              type: float
+            - name: ELY_current
+              unit: A
+              type: float
+            - name: ELY_Pan_air
+              unit: atm
+              type: float
+            - name: ELY_Pca_H2
+              unit: atm
+              type: float
+            - name: ELY_Tcell
+              unit: C
+              type: float
+            - name: GT_P
+              unit: pu
+              type: float
+            - name: GT_Q
+              unit: pu
+              type: float
+            - name: GT_V
+              unit: pu
+              type: float
+            - name: GT_w
+              unit: pu
+              type: float
+            - name: WF_P
+              unit: pu
+              type: float
+            - name: WF_Q
+              unit: pu
+              type: float
+            - name: WF_V
+              unit: pu
+              type: float
+            - name: Flex_P
+              unit: pu
+              type: float
+            - name: Flex_Q
+              unit: pu
+              type: float
+            - name: Flex_V
+              unit: pu
+              type: float
+            - name: FixL1_P
+              unit: pu
+              type: float
+            - name: FixL1_Q
+              unit: pu
+              type: float
+            - name: FixL2_P
+              unit: pu
+              type: float
+            - name: FixL2_Q
+              unit: pu
+              type: float
+            - name: ESS_P
+              unit: pu
+              type: float
+            - name: ESS_Q
+              unit: pu
+              type: float
+            - name: ESS_V
+              unit: pu
+              type: float
+            - name: ESS_w
+              unit: pu
+              type: float
+            - name: GC_Vdc
+              unit: pu
+              type: float
+            - name: GC_Idc
+              unit: pu
+              type: float
+            - name: FC_Idc
+              unit: pu
+              type: float
+            - name: FC_Vdc
+              unit: pu
+              type: float
+            - name: FCC_Vdc
+              unit: pu
+              type: float
+            - name: ELY_Idc
+              unit: pu
+              type: float
+            - name: ELY_Vdc
+              unit: pu
+              type: float
+            - name: ELC_Vdc
+              unit: pu
+              type: float
+            - name: BT_Idc
+              unit: pu
+              type: float
+            - name: BT_Vdc
+              unit: pu
+              type: float
+            - name: BTC_Vdc
+              unit: pu
+              type: float
+            hooks:
+            - type: stats
+          out:
+            address: 192.168.10.120:12008
+        rwth-villas:
+          type: socket
+          layer: udp
+          in:
+            address: 0.0.0.0:12006
+            signals:
+            - name: FC_voltage
+              unit: V
+              type: float
+            - name: FC_power
+              unit: W
+              type: float
+            - name: FC_heat
+              unit: W
+              type: float
+            - name: FC_massflow_H2
+              unit: kg/s
+              type: float
+            - name: FC_massflow_air
+              unit: kg/s
+              type: float
+            - name: FC_eff_electric
+              unit: "%"
+              type: float
+            - name: ELY_voltage
+              unit: V
+              type: float
+            - name: ELY_power
+              unit: W
+              type: float
+            - name: ELY_heat
+              unit: W
+              type: float
+            - name: ELY_massflow_H2
+              unit: kg/s
+              type: float
+            - name: ELY_massflow_air
+              unit: kg/s
+              type: float
+            - name: ELY_eff_electric
+              unit: "%"
+              type: float
+            hooks:
+            - type: stats
+          out:
+            address: 10.100.49.11:12001
+        web-ntnu:
+          type: websocket
+          destinations:
+          - ws://localhost:8080/ws/relay/sim-hes-off-ntnu
+        web-rwth:
+          type: websocket
+          destinations:
+          - ws://localhost:8080/ws/relay/sim-hes-off-rwth
+        logger:
+          type: file
+          format: csv
+          uri: log_ntnu_%y-%m-%d_%H-%M-%S.csv
+          out:
+            flush: false
+            buffer_size: 0
+      paths:
+      - in: rwth-villas
+        out: ntnu-opal
+      - in: ntnu-opal.data[0-7]
+        out: rwth-villas
+      - enabled: false
+        in:
+        - ntnu-opal
+        - rwth-villas
+        out:
+        - logger
+      - in:
+        - ntnu-opal
+        out:
+        - web-ntnu
+        hooks:
+        - type: limit_rate
+          rate: 10
+      - in:
+        - rwth-villas
+        out:
+        - web-rwth
+        hooks:
+        - type: limit_rate
+          rate: 10
+
+  villas-rwth:
+    json:
+      stats: 1
+      nodes:
+        rwth-opal:
+          type: socket
+          layer: udp
+          in:
+            address: 0.0.0.0:12008
+            signals:
+            - name: FC_voltage
+              unit: V
+              type: float
+            - name: FC_power
+              unit: W
+              type: float
+            - name: FC_heat
+              unit: W
+              type: float
+            - name: FC_massflow_H2
+              unit: kg/s
+              type: float
+            - name: FC_massflow_air
+              unit: kg/s
+              type: float
+            - name: FC_eff_electric
+              unit: "%"
+              type: float
+            - name: ELY_voltage
+              unit: V
+              type: float
+            - name: ELY_power
+              unit: W
+              type: float
+            - name: ELY_heat
+              unit: W
+              type: float
+            - name: ELY_massflow_H2
+              unit: kg/s
+              type: float
+            - name: ELY_massflow_air
+              unit: kg/s
+              type: float
+            - name: ELY_eff_electric
+              unit: "%"
+              type: float
+            - name: BOP_tank_pressure
+              unit: bar
+              type: float
+            - name: BOP_tank_mass
+              unit: kg
+              type: float
+            - name: BOP_h2comp_power
+              unit: W
+              type: float
+            - name: BOP_aircomp_power
+              unit: W
+              type: float
+            hooks:
+            - type: stats
+          out:
+            address: 134.130.169.81:12008
+        ntnu-villas:
+          type: socket
+          layer: udp
+          in:
+            address: 0.0.0.0:12001
+            signals:
+            - name: FC_current
+              unit: A
+              type: float
+            - name: FC_Pan_H2
+              unit: atm
+              type: float
+            - name: FC_Pca_air
+              unit: atm
+              type: float
+            - name: FC_Tcell
+              unit: C
+              type: float
+            - name: ELY_current
+              unit: A
+              type: float
+            - name: ELY_Pan_air
+              unit: atm
+              type: float
+            - name: ELY_Pca_H2
+              unit: atm
+              type: float
+            - name: ELY_Tcell
+              unit: C
+              type: float
+            hooks:
+            - type: stats
+          out:
+            address: 10.101.8.4:12001
+        web-rwth:
+          type: websocket
+          destinations:
+          - https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/sim-hes-off-rwth
+        web-ntnu:
+          type: websocket
+          destinations:
+          - https://villas.k8s.eonerc.rwth-aachen.de/ws/relay/sim-hes-off-ntnu
+        logger:
+          type: file
+          format: csv
+          uri: log_rwth_%y-%m-%d_%H-%M-%S.csv
+      paths:
+      - in:
+        - rwth-opal.data[0-7]
+        out:
+        - ntnu-villas
+      - in:
+        - ntnu-villas
+        out:
+        - rwth-opal
+      - in:
+        - rwth-opal
+        - ntnu-villas
+        out:
+        - logger
+      - in:
+        - rwth-opal
+        out:
+        - web-rwth
+        hooks:
+        - type: limit_rate
+          rate: 10
+      - in:
+        - ntnu-villas
+        out:
+        - web-ntnu
+        hooks:
+        - type: limit_rate
+          rate: 10
+
