@@ -1,3 +1,4 @@
+---
 apiVersion: v2
 name: riasc
 description: Research Infrastructure as Code
@@ -42,7 +43,8 @@ dependencies:
 - name: time-sync
   version: 0.1.0
   repository: https://erigrid2.github.io/charts/
-  condition: time-sync.enabled
+  alias: time_sync
+  condition: time_sync.enabled
 
 - name: kilo
   version: 0.1.0

@@ -1,31 +1,16 @@
-# S3 object storage for network monitoring results
-s3:
+---
+
+
+
+# VILLASframework
+villas:
   enabled: true
-
-  resources:
-    requests:
-      memory: 256Mi
-
-  nodeSelector:
-    node-role.kubernetes.io/master: "true"
-
-gatekeeper:
-  enabled: true
-  psp:
-    enabled: false
-
-  disableValidatingWebhook: true
 
 # Time synchronization
-time-sync:
+time_sync:
   enabled: true
 
-  ntp:
-    servers:
-    - ntp1.rwth-aachen.de
-    - ntp2.rwth-aachen.de
-
-# Network related services
+  configurations: []
 
 ## Virtual networking
 kilo:
