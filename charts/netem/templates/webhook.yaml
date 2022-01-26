@@ -1,4 +1,4 @@
-{{- $cn := "k8s-netem-webhook.riasc-system.svc" -}}
+{{- $cn := printf "%s-webhook.%s.svc" (include "netem.fullname" . ) .Release.Namespace -}}
 {{- $ca := genCA "netem-admission-ca" 3650 -}}
 {{- $cert := genSignedCert $cn nil (list $cn) 3650 $ca -}}
 ---
@@ -28,15 +28,14 @@ webhooks:
     caBundle: {{ b64enc $ca.Cert }}
     service:
       namespace: {{ .Release.Namespace }}
-      name: k8s-netem-webhook
+      name: {{ include "netem.fullname" . }}-webhook
       path: /mutate
       port: 443
-
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: k8s-netem-webhook-cert
+  name: {{ include "netem.fullname" . }}-webhook-cert
   labels:
     {{- include "netem.labels" . | nindent 4 }}
 type: kubernetes.io/tls

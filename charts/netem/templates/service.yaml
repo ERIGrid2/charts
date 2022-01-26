@@ -2,12 +2,12 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: k8s-netem-webhook
+  name: {{ include "netem.fullname" . }}-webhook
   labels:
     {{- include "netem.labels" . | nindent 4 }}
 spec:
   selector:
-    app: k8s-netem-webhook
+    {{- include "netem.selectorLabels" . | nindent 4 }}
   ports:
   - name: https
     protocol: TCP

@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: k8s-netem-webhook
+  name: {{ include "netem.fullname" . }}-webhook
   labels:
     {{- include "netem.labels" . | nindent 4 }}
   namespace: riasc-system
@@ -10,22 +10,22 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: k8s-netem-webhook
+      {{- include "netem.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        app: k8s-netem-webhook
+        {{- include "netem.selectorLabels" . | nindent 8 }}
       name: webhook
     spec:
-      serviceAccountName: k8s-netem
+      serviceAccountName: {{ include "netem.fullname" . }}
       automountServiceAccountToken: true
       nodeSelector:
-        node-role.kubernetes.io/master: ""
+        node-role.kubernetes.io/master: "true"
       containers:
       - name: webhook
         command: ['k8s-netem-webhook']
         image: erigrid/netem:latest
-        imagePullPolicy: Never # image is build by minikube
+        imagePullPolicy: Always
         env:
         - name: DEBUG
           value: '1'
@@ -34,7 +34,7 @@ spec:
         volumeMounts:
         - readOnly: true
           mountPath: /certs
-          name: webhook-certs
+          name: webhook-cert
         readinessProbe:
           httpGet:
             path: /health
@@ -54,6 +54,6 @@ spec:
             memory: 256Mi
             cpu: 500m
       volumes:
-      - name: webhook-certs
+      - name: webhook-cert
         secret:
-          secretName: k8s-netem-webhook-certs
+          secretName: {{ include "netem.fullname" . }}-webhook-cert
