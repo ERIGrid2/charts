@@ -1,0 +1,48 @@
+{{- $cn := printf "%s-webhook.%s.svc" (include "riasc.fullname" . ) .Release.Namespace -}}
+{{- $ca := genCA "riasc-admission-ca" 3650 -}}
+{{- $cert := genSignedCert $cn nil (list $cn) 3650 $ca -}}
+---
+kind: MutatingWebhookConfiguration
+apiVersion: admissionregistration.k8s.io/v1
+metadata:
+  name: {{ include "riasc.fullname" . }}-webhook
+  labels:
+    {{- include "riasc.labels" . | nindent 4 }}
+webhooks:
+- name: check-node-selector.project.riasc.eu
+  admissionReviewVersions:
+  - v1
+  - v1beta1
+  clientConfig:
+    caBundle: {{ b64enc $ca.Cert }}
+    service:
+      namespace: {{ .Release.Namespace }}
+      name: {{ include "netem.fullname" . }}-webhook
+      path: /check_node_selector
+      port: 443
+  failurePolicy: Ignore
+  matchPolicy: Equivalent
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pods
+    scope: '*'
+  sideEffects: None
+  timeoutSeconds: 30    
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "riasc.fullname" . }}-webhook-cert
+  labels:
+    {{- include "riasc.labels" . | nindent 4 }}
+type: kubernetes.io/tls
+data:
+  tls.crt: {{ b64enc $cert.Cert }}
+  tls.key: {{ b64enc $cert.Key }}

@@ -1,0 +1,15 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "riasc.fullname" . }}-webhook
+  labels:
+    {{- include "riasc.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "riasc.selectorLabels" . | nindent 4 }}
+  ports:
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 443
