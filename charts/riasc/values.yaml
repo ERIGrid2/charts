@@ -34,20 +34,3 @@ kilo:
 multus:
   enabled: true
 
-flent:
-  enabled: false
-
-# User workloads which should deployed in the RIasC cluster
-# workloads:
-# - name: Test workloads
-#   image: nginx
-#   command: [ /bin/sh, -c, 1000 ]
-#   node: infis-pi
-#   env:
-#     KEY: VALUE
-
-# Cluster-external devices
-# devices:
-# - name: rwth-abb-pmu-1
-#   external_ip: 134.130.169.123
-#   
