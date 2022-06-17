@@ -15,7 +15,7 @@ dir=$1
 if [ ${dir} = "up" ]
 then
 #    docker run --rm -d --network host --name ${name} -v $PWD/lsregistrationdaemon.conf:/usr/share/doc/perfsonar-lsregistrationdaemon/examples/lsregistrationdaemon.conf ${image}
-    docker run --rm -d --name ${name} -v $PWD/lsregistrationdaemon.conf:/usr/share/doc/perfsonar-lsregistrationdaemon/examples/lsregistrationdaemon.conf ${image}
+    docker run --rm -d --hostname kojumaki-vtt --name ${name} -v $PWD/erigrid.conf:/etc/perfsonar/psconfig/archives.d/erigrid.conf -v $PWD/lsregistrationdaemon.conf:/usr/share/doc/perfsonar-lsregistrationdaemon/examples/lsregistrationdaemon.conf ${image}
 elif [ ${dir} = "down" ]
 then
    docker stop ${name}

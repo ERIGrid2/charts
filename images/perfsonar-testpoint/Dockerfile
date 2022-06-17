@@ -50,7 +50,7 @@ COPY changelog.gz /usr/share/doc/perfsonar-testpoint/changelog.gz
 COPY rsyslog/python-pscheduler.conf /etc/rsyslog.d/python-pscheduler.conf
 COPY rsyslog/owamp-syslog.conf /etc/rsyslog.d/owamp-syslog.conf
 
-# Install personar-testpoint package
+# Install perfsonar-testpoint package
 RUN apt-get update && \
     apt-get -y --no-install-recommends install \
         perfsonar-testpoint
