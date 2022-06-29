@@ -19,10 +19,10 @@ then
     docker run --rm -d --hostname ${host_name} --name ${container_name} -v $PWD/erigrid.conf:/etc/perfsonar/psconfig/archives.d/erigrid.conf -v $PWD/lsregistrationdaemon.conf:/usr/share/doc/perfsonar-lsregistrationdaemon/examples/lsregistrationdaemon.conf ${image}
 elif [ ${dir} = "down" ]
 then
-   docker stop ${name}
+   docker stop ${container_name}
 elif [ ${dir} = "exec" ]
 then
-   docker exec -it ${name} bash
+   docker exec -it ${container_name} bash
 elif [ ${dir} = "build" ]
 then
    docker build -t ${image} -f Dockerfile .
