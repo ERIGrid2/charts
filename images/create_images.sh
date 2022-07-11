@@ -16,8 +16,7 @@ function docker_init_buildkit() {
 	docker buildx create --platform linux/arm/v7,linux/arm64,linux/amd64 --use --driver docker-container --name riasc
 
 	# Setup qemu-static emulation
-	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
+	docker run --rm --privileged aptman/qus -s -- -p
 	export DOCKER_BUILDKIT=1
 }
 
